@@ -1,37 +1,25 @@
-# Order System Development Plan
+# Order System Planning Document
 
 ## 프로젝트 개요
 
 **목표**: 테이블 오더, 키오스크, 어드민 시스템을 포함한 통합 주문 관리 시스템 개발
 
-**기술 스택**:
-- Frontend: Next.js 15 + React 19 + TypeScript
-- Backend: Supabase (Database + Auth + Real-time)
-- Monorepo: Turborepo + Yarn Workspaces
-- Styling: Tailwind CSS + 반응형 디자인
+**비즈니스 모델**: 매장 내 무인 주문 시스템으로 인력 절약 및 고객 편의성 향상
 
-## 시스템 아키텍처
+## 서비스 구조
 
-### 앱 구조 계획
+### 3개 서비스 앱
+
 ```
-apps/
-├── table-order/     # 테이블 주문 앱 (고객용)
-├── kiosk/          # 키오스크 앱 (매장 내 주문)
-├── admin/          # 어드민 대시보드 (관리자용)
-└── docs/           # 문서 (기존 유지)
-
-packages/
-├── ui/             # 공통 UI 컴포넌트 (Tailwind 기반)
-├── supabase/       # Supabase 클라이언트 및 타입
-├── shared/         # 공통 유틸리티 및 훅
-├── tailwind-config/ # Tailwind 설정 및 디자인 토큰
-├── eslint-config/  # ESLint 설정 (기존)
-└── typescript-config/ # TypeScript 설정 (기존)
+📱 table-order     # 테이블 주문 앱 (고객용 - 모바일)
+🖥️ kiosk          # 키오스크 앱 (매장 내 무인 주문)
+👨‍💼 admin          # 어드민 대시보드 (관리자용 - 데스크톱)
 ```
 
 ## 데이터베이스 스키마 (Supabase)
 
 ### 핵심 테이블
+
 ```sql
 -- 매장 정보
 CREATE TABLE stores (
@@ -116,6 +104,7 @@ CREATE TABLE admin_profiles (
 ```
 
 ### Row Level Security (RLS) 정책
+
 ```sql
 -- 매장별 데이터 격리
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
@@ -135,9 +124,11 @@ CREATE POLICY admin_store_policy ON orders
 ## 앱별 기능 명세
 
 ### 1. 테이블 오더 앱 (`apps/table-order`)
+
 **Target**: 고객이 테이블에서 QR코드로 접속하여 주문
 
 **핵심 기능**:
+
 - QR 코드 스캔으로 테이블 식별
 - 메뉴 카테고리별 브라우징
 - 장바구니 기능
@@ -145,15 +136,18 @@ CREATE POLICY admin_store_policy ON orders
 - 추가 주문 가능
 
 **UI/UX 고려사항**:
+
 - 모바일 우선 반응형 디자인
 - 직관적인 네비게이션
 - 큰 터치 영역
 - 이미지 중심 메뉴 표시
 
 ### 2. 키오스크 앱 (`apps/kiosk`)
+
 **Target**: 매장 내 키오스크 단말기에서 고객이 직접 주문
 
 **핵심 기능**:
+
 - 터치 친화적 인터페이스
 - 메뉴 선택 및 옵션 설정
 - 결제 연동 (향후 확장)
@@ -161,15 +155,18 @@ CREATE POLICY admin_store_policy ON orders
 - 다국어 지원 (한/영)
 
 **UI/UX 고려사항**:
+
 - 대형 화면 최적화 (태블릿/키오스크)
 - 시각적 메뉴 표시
 - 간단한 주문 플로우
 - 접근성 고려 (시각/청각 장애인)
 
 ### 3. 어드민 앱 (`apps/admin`)
+
 **Target**: 매장 관리자 및 직원용 주문 관리 시스템
 
 **핵심 기능**:
+
 - 실시간 주문 대시보드
 - 주문 상태 관리 (접수, 준비중, 완료)
 - 메뉴 관리 (CRUD)
@@ -178,247 +175,97 @@ CREATE POLICY admin_store_policy ON orders
 - 테이블 상태 관리
 
 **UI/UX 고려사항**:
+
 - 데스크톱 우선 설계
 - 효율적인 주문 처리 워크플로우
 - 실시간 알림 시스템
 - 직관적인 대시보드
 
-## 공통 패키지 설계
+## 비즈니스 요구사항
 
-### `packages/supabase`
-```typescript
-// Supabase 클라이언트 설정
-export const supabase = createClient(url, key)
+### 핵심 목표
 
-// 타입 정의 (Database Generated Types)
-export type Database = {
-  public: {
-    Tables: {
-      orders: { ... }
-      menu_items: { ... }
-      // ...
-    }
-  }
-}
+- **인력 절약**: 주문 접수 직원 없이도 매장 운영 가능
+- **고객 만족**: 대기시간 단축, 개인화된 주문 경험
+- **매출 증대**: 추가 주문 유도, 메뉴 추천 시스템
+- **운영 효율**: 실시간 주문 관리, 재고 연동
 
-// API 함수들
-export const ordersApi = {
-  create: (order: CreateOrder) => Promise<Order>
-  getByTable: (tableId: string) => Promise<Order[]>
-  updateStatus: (id: string, status: OrderStatus) => Promise<void>
-}
-```
+### 타겟 고객
 
-### `packages/shared`
-```typescript
-// 공통 훅
-export const useOrders = (tableId?: string) => { ... }
-export const useMenuItems = (storeId: string) => { ... }
-export const useRealtimeOrders = () => { ... }
+- **매장 사장님**: 인건비 절약, 매출 증대 관심
+- **고객**: 빠른 주문, 개인 맞춤 서비스 원함
+- **직원**: 효율적인 주문 관리 도구 필요
 
-// 유틸리티
-export const formatPrice = (price: number) => string
-export const generateOrderNumber = () => string
-export const validateOrder = (order: Order) => boolean
-```
+## 개발 일정 (총 11주)
 
-### `packages/ui`
-```typescript
-// Tailwind 기반 공통 컴포넌트
-export const MenuCard = ({ item, onAdd }) => (
-  <div className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
-    <img src={item.image} className="w-full h-32 object-cover rounded-md mb-3" />
-    <h3 className="font-semibold text-gray-900 mb-2">{item.name}</h3>
-    <p className="text-2xl font-bold text-blue-600 mb-3">{formatPrice(item.price)}</p>
-    <button
-      onClick={() => onAdd(item)}
-      className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
-    >
-      장바구니 담기
-    </button>
-  </div>
-)
+### Phase 1: 기반 시스템 (2주)
 
-export const StatusBadge = ({ status }) => {
-  const statusStyles = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-blue-100 text-blue-800',
-    preparing: 'bg-orange-100 text-orange-800',
-    ready: 'bg-green-100 text-green-800',
-    completed: 'bg-gray-100 text-gray-800'
-  }
-  return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyles[status]}`}>
-      {status}
-    </span>
-  )
-}
-```
-
-### `packages/tailwind-config`
-```javascript
-// tailwind.config.js - 공통 Tailwind 설정
-module.exports = {
-  content: [
-    './src/**/*.{js,ts,jsx,tsx}',
-    '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
-  ],
-  theme: {
-    extend: {
-      colors: {
-        brand: {
-          50: '#eff6ff',
-          500: '#3b82f6',
-          600: '#2563eb',
-          900: '#1e3a8a',
-        },
-        gray: {
-          50: '#f9fafb',
-          100: '#f3f4f6',
-          500: '#6b7280',
-          900: '#111827',
-        }
-      },
-      fontFamily: {
-        sans: ['Pretendard', 'system-ui', 'sans-serif'],
-      },
-      spacing: {
-        '18': '4.5rem',
-        '88': '22rem',
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
-      }
-    },
-  },
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-  ],
-}
-```
-
-## 개발 로드맵
-
-### Phase 1: 기반 구조 구축 (2주)
-1. **Week 1**:
-   - Supabase 프로젝트 설정 및 스키마 생성
-   - 모노레포 구조 확장 (새 앱 추가)
-   - `packages/supabase` 패키지 개발
-   - 기본 타입 정의 및 API 함수
-
-2. **Week 2**:
-   - `packages/shared` 공통 훅 및 유틸리티
-   - `packages/ui` 기본 컴포넌트 라이브러리 (Tailwind)
-   - `packages/tailwind-config` 공통 디자인 시스템
-   - 인증 시스템 구축
-   - 기본 레이아웃 및 네비게이션
+- 데이터베이스 스키마 설계 및 구축
+- 인증/권한 시스템
+- 기본 UI/UX 디자인 시스템
 
 ### Phase 2: 어드민 시스템 (3주)
-3. **Week 3-4**:
-   - 어드민 앱 기본 구조
-   - 메뉴 관리 시스템 (CRUD)
-   - 매장 설정 관리
-   - 카테고리 관리
 
-4. **Week 5**:
-   - 주문 대시보드 구축
-   - 실시간 주문 모니터링
-   - 주문 상태 관리 기능
-   - 기본 통계 화면
+- 매장 관리 기능
+- 메뉴 관리 시스템
+- 주문 대시보드 및 통계
 
-### Phase 3: 테이블 오더 시스템 (3주)
-5. **Week 6-7**:
-   - 테이블 오더 앱 기본 구조
-   - QR 코드 시스템 구축
-   - 메뉴 브라우징 UI
-   - 장바구니 기능
+### Phase 3: 테이블 오더 (3주)
 
-6. **Week 8**:
-   - 주문 생성 및 관리
-   - 실시간 주문 상태 확인
-   - 추가 주문 기능
-   - 모바일 최적화
+- QR 코드 기반 테이블 인식
+- 모바일 최적화 주문 UI
+- 실시간 주문 상태 확인
 
 ### Phase 4: 키오스크 시스템 (2주)
-7. **Week 9**:
-   - 키오스크 앱 기본 구조
-   - 대형 화면 최적화 UI
-   - 터치 친화적 인터페이스
 
-8. **Week 10**:
-   - 주문 플로우 완성
-   - 다국어 지원
-   - 접근성 개선
-   - 성능 최적화
+- 터치 친화적 대형 화면 UI
+- 매장 내 무인 주문 시스템
+- 다국어 지원
 
-### Phase 5: 통합 및 배포 (1주)
-9. **Week 11**:
-   - 전체 시스템 통합 테스트
-   - 성능 최적화
-   - 보안 검토
-   - 배포 환경 구축
+### Phase 5: 통합 및 런칭 (1주)
 
-## 기술적 고려사항
+- 전체 시스템 연동 테스트
+- 성능 최적화 및 보안 점검
+- 실제 매장 파일럿 테스트
 
-### 실시간 기능
-```typescript
-// Supabase Realtime 활용
-const subscription = supabase
-  .channel('orders')
-  .on('postgres_changes',
-    { event: 'INSERT', schema: 'public', table: 'orders' },
-    (payload) => {
-      // 새 주문 알림
-    }
-  )
-  .subscribe()
-```
+## 성공 지표 (KPI)
 
-### 상태 관리
-- React Query/TanStack Query로 서버 상태 관리
-- Zustand로 클라이언트 상태 관리
-- Supabase Realtime으로 실시간 동기화
+### 매장 운영 효율성
 
-### 성능 최적화
-- Next.js 15의 Turbopack 활용
-- 이미지 최적화 (next/image)
-- 코드 스플리팅 및 지연 로딩
-- Supabase Edge Functions 활용 고려
+- **주문 처리 시간**: 기존 대비 50% 단축
+- **인력 절약**: 주문 접수 직원 1명 절약 효과
+- **주문 정확도**: 99% 이상 (수기 주문 대비 오류 감소)
 
-### 보안
-- Row Level Security (RLS) 정책 구현
-- JWT 토큰 기반 인증
-- API 요청 검증
-- XSS/CSRF 방지
+### 고객 만족도
 
-## 배포 전략
+- **대기 시간**: 평균 3분 이내 주문 완료
+- **사용성**: 직관적 UI로 첫 사용자도 5분 이내 주문 가능
+- **접근성**: 모든 연령대 사용 가능한 인터페이스
 
-### 개발 환경
-```bash
-# 모든 앱 동시 개발 실행
-yarn dev
+### 비즈니스 성과
 
-# 특정 앱만 실행
-yarn turbo dev --filter=admin
-yarn turbo dev --filter=table-order
-yarn turbo dev --filter=kiosk
-```
+- **추가 주문율**: 테이블 오더 시 20% 증가 목표
+- **회전율**: 테이블 회전율 15% 개선
+- **매출 증대**: 월 매출 10% 이상 증가
 
-### 프로덕션 배포
-- Vercel을 통한 자동 배포
-- 환경별 Supabase 프로젝트 분리
-- 도메인별 앱 분리 배포 고려
-  - `admin.store.com`
-  - `order.store.com`
-  - `kiosk.store.com`
+## 향후 확장 계획
 
-## 다음 단계
+### 1단계 확장 (6개월 후)
 
-1. **즉시 시작**: Supabase 프로젝트 생성 및 스키마 설정
-2. **모노레포 확장**: 새로운 앱 폴더 생성
-3. **공통 패키지 개발**: supabase, shared 패키지 구축
-4. **어드민 시스템부터** 단계적 개발 시작
+- **결제 연동**: 카드/모바일 결제 시스템
+- **포인트 시스템**: 고객 리워드 프로그램
+- **리뷰 시스템**: 메뉴 평점 및 후기
 
-이 계획을 바탕으로 체계적이고 확장 가능한 주문 관리 시스템을 구축할 수 있습니다.
+### 2단계 확장 (1년 후)
+
+- **다매장 관리**: 프랜차이즈 지원 시스템
+- **재고 관리**: 실시간 재고 연동
+- **마케팅 도구**: 쿠폰, 프로모션 관리
+
+### 3단계 확장 (2년 후)
+
+- **AI 추천**: 개인화 메뉴 추천 시스템
+- **음성 주문**: 키오스크 음성 인식 기능
+- **배달 연동**: 배달앱과의 통합 관리
+
+이 기획을 통해 매장 운영의 디지털 전환을 이루고, 지속 가능한 비즈니스 모델을 구축할 수 있습니다.
