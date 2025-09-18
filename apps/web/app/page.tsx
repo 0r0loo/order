@@ -39,9 +39,7 @@ export default function Home() {
         </ol>
 
         <div className={styles.ctas}>
-          <Button appName="web">
-            Test Button
-          </Button>
+          <Button appName="web">Test Button</Button>
         </div>
       </main>
       <footer className={styles.footer}>
