@@ -40,49 +40,64 @@ export const MenuList = forwardRef<MenuListRef, MenuListProps>(({ menuData, onAc
     scrollToCategory
   }));
 
-  // Intersection Observer를 사용한 스크롤 감지
+  // 스크롤 기반 활성 카테고리 감지
   useEffect(() => {
     if (!onActiveCategory) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // 현재 보이는 카테고리들 중 가장 많이 보이는 것을 찾기
-        let mostVisible = { categoryId: '', ratio: 0 };
+    const handleScroll = () => {
+      const headerOffset = 150; // 헤더 + 여유 공간
+      let activeCategory = '';
 
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > mostVisible.ratio) {
-            const categoryElement = entry.target as HTMLDivElement;
-            const categoryId = categoryElement.dataset.categoryId;
-            if (categoryId) {
-              mostVisible = {
-                categoryId,
-                ratio: entry.intersectionRatio
-              };
+      // 모든 카테고리를 순회하면서 현재 스크롤 위치에서 가장 적합한 카테고리 찾기
+      menuData.categories.forEach((category) => {
+        const element = categoryRefs.current[category.id];
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          // 카테고리가 헤더 아래에 있고, 화면 상단에서 가까운 경우
+          if (rect.top <= headerOffset && rect.bottom > headerOffset) {
+            activeCategory = category.id;
+          }
+        }
+      });
+
+      // 활성 카테고리가 없으면 첫 번째로 보이는 카테고리 사용
+      if (!activeCategory) {
+        menuData.categories.forEach((category) => {
+          const element = categoryRefs.current[category.id];
+          if (element && !activeCategory) {
+            const rect = element.getBoundingClientRect();
+            if (rect.bottom > headerOffset) {
+              activeCategory = category.id;
             }
           }
         });
-
-        // 가장 많이 보이는 카테고리가 있으면 활성 카테고리로 설정
-        if (mostVisible.categoryId) {
-          onActiveCategory(mostVisible.categoryId);
-        }
-      },
-      {
-        rootMargin: '-120px 0px -50% 0px', // 헤더 높이 고려 및 카테고리의 상단 부분이 보일 때 활성화
-        threshold: [0, 0.1, 0.5, 1] // 다양한 교차 비율에서 감지
       }
-    );
 
-    // 모든 카테고리 요소 관찰 시작
-    Object.entries(categoryRefs.current).forEach(([categoryId, element]) => {
-      if (element) {
-        element.dataset.categoryId = categoryId; // 데이터 속성 추가
-        observer.observe(element);
+      // 카테고리 변경 시에만 콜백 호출
+      if (activeCategory) {
+        onActiveCategory(activeCategory);
       }
-    });
+    };
+
+    // 스크롤 이벤트 리스너 등록 (throttle 적용)
+    let ticking = false;
+    const throttledHandleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
+
+    // 초기 실행
+    handleScroll();
 
     return () => {
-      observer.disconnect();
+      window.removeEventListener('scroll', throttledHandleScroll);
     };
   }, [onActiveCategory, menuData.categories]);
 
@@ -131,6 +146,9 @@ export const MenuList = forwardRef<MenuListRef, MenuListProps>(({ menuData, onAc
           총 금액: {getTotalAmount().toLocaleString()}원
         </p>
       </div>
+
+      {/* CartSummary가 콘텐츠를 가리지 않도록 하단 여유 공간 추가 */}
+      <div className="h-20"></div>
     </div>
   );
 });
