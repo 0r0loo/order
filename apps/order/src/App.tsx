@@ -25,6 +25,12 @@ function App() {
     menuListRef.current?.scrollToCategory(categoryId);
   };
 
+  // 스크롤에 의한 자동 카테고리 변경 처리
+  const handleActiveCategory = (categoryId: string) => {
+    console.log('스크롤로 활성 카테고리 변경:', categoryId);
+    setSelectedCategory(categoryId);
+  };
+
   return (
     <MobileLayout>
       <Header
@@ -50,7 +56,11 @@ function App() {
           </div>
 
           {/* 메뉴 목록 - 컴포넌트로 변경 */}
-          <MenuList ref={menuListRef} menuData={menuData} />
+          <MenuList
+            ref={menuListRef}
+            menuData={menuData}
+            onActiveCategory={handleActiveCategory}
+          />
         </div>
       </div>
 

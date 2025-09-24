@@ -1,16 +1,17 @@
-import { useState, useRef, useImperativeHandle, forwardRef } from 'react';
+import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 import type {MenuData} from '../../types/menu';
 import { MenuCategory } from './MenuCategory';
 
 interface MenuListProps {
   menuData: MenuData;
+  onActiveCategory?: (categoryId: string) => void;
 }
 
 export interface MenuListRef {
   scrollToCategory: (categoryId: string) => void;
 }
 
-export const MenuList = forwardRef<MenuListRef, MenuListProps>(({ menuData }, ref) => {
+export const MenuList = forwardRef<MenuListRef, MenuListProps>(({ menuData, onActiveCategory }, ref) => {
   const [quantities, setQuantities] = useState<Record<string, number>>({
     // 초기 상태 설정 (기존 하드코딩된 값들 반영)
     'cass-draft': 1,
@@ -38,6 +39,52 @@ export const MenuList = forwardRef<MenuListRef, MenuListProps>(({ menuData }, re
   useImperativeHandle(ref, () => ({
     scrollToCategory
   }));
+
+  // Intersection Observer를 사용한 스크롤 감지
+  useEffect(() => {
+    if (!onActiveCategory) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // 현재 보이는 카테고리들 중 가장 많이 보이는 것을 찾기
+        let mostVisible = { categoryId: '', ratio: 0 };
+
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > mostVisible.ratio) {
+            const categoryElement = entry.target as HTMLDivElement;
+            const categoryId = categoryElement.dataset.categoryId;
+            if (categoryId) {
+              mostVisible = {
+                categoryId,
+                ratio: entry.intersectionRatio
+              };
+            }
+          }
+        });
+
+        // 가장 많이 보이는 카테고리가 있으면 활성 카테고리로 설정
+        if (mostVisible.categoryId) {
+          onActiveCategory(mostVisible.categoryId);
+        }
+      },
+      {
+        rootMargin: '-120px 0px -50% 0px', // 헤더 높이 고려 및 카테고리의 상단 부분이 보일 때 활성화
+        threshold: [0, 0.1, 0.5, 1] // 다양한 교차 비율에서 감지
+      }
+    );
+
+    // 모든 카테고리 요소 관찰 시작
+    Object.entries(categoryRefs.current).forEach(([categoryId, element]) => {
+      if (element) {
+        element.dataset.categoryId = categoryId; // 데이터 속성 추가
+        observer.observe(element);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [onActiveCategory, menuData.categories]);
 
   const handleQuantityChange = (itemId: string, quantity: number) => {
     setQuantities(prev => ({
