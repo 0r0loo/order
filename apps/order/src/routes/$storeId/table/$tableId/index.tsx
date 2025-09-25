@@ -1,17 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
-import { MobileLayout } from '../app/layout/MobileLayout'
-import { Header } from '../widgets/header/Header'
-import { CategoryTabs } from '../widgets/category-tabs/CategoryTabs'
-import { CartSummary } from '../widgets/cart-summary/CartSummary'
-import { MenuList, type MenuListRef } from '../components/menu/MenuList'
-import { menuData } from '../data/menu'
+import { MobileLayout } from '../../../../app/layout/MobileLayout'
+import { Header } from '../../../../widgets/header/Header'
+import { CategoryTabs } from '../../../../widgets/category-tabs/CategoryTabs'
+import { CartSummary } from '../../../../widgets/cart-summary/CartSummary'
+import { MenuList, type MenuListRef } from '../../../../components/menu/MenuList'
+import { menuData } from '../../../../data/menu'
 
-export const Route = createFileRoute('/menu')({
+export const Route = createFileRoute('/$storeId/table/$tableId/')({
   component: MenuPage,
 })
 
 function MenuPage() {
+  const { storeId, tableId } = Route.useParams()
   const menuListRef = useRef<MenuListRef>(null);
   const [selectedCategory, setSelectedCategory] = useState('beer');
 
@@ -40,7 +41,7 @@ function MenuPage() {
     <MobileLayout>
       <Header
         storeName="맛있는 술집"
-        tableNumber={5}
+        tableNumber={parseInt(tableId)}
         currentOrders={3}
       />
 
@@ -65,6 +66,8 @@ function MenuPage() {
             ref={menuListRef}
             menuData={menuData}
             onActiveCategory={handleActiveCategory}
+            storeId={storeId}
+            tableId={tableId}
           />
         </div>
       </div>

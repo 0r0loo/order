@@ -5,13 +5,15 @@ import { MenuCategory } from './MenuCategory';
 interface MenuListProps {
   menuData: MenuData;
   onActiveCategory?: (categoryId: string) => void;
+  storeId: string;
+  tableId: string;
 }
 
 export interface MenuListRef {
   scrollToCategory: (categoryId: string) => void;
 }
 
-export const MenuList = forwardRef<MenuListRef, MenuListProps>(({ menuData, onActiveCategory }, ref) => {
+export const MenuList = forwardRef<MenuListRef, MenuListProps>(({ menuData, onActiveCategory, storeId, tableId }, ref) => {
   const [quantities, setQuantities] = useState<Record<string, number>>({
     // 초기 상태 설정 (기존 하드코딩된 값들 반영)
     'cass-draft': 1,
@@ -134,6 +136,8 @@ export const MenuList = forwardRef<MenuListRef, MenuListProps>(({ menuData, onAc
           category={category}
           quantities={quantities}
           onQuantityChange={handleQuantityChange}
+          storeId={storeId}
+          tableId={tableId}
         />
       ))}
 

@@ -1,9 +1,12 @@
 import type { MenuItem as MenuItemType } from '../../types/menu';
+import { Link } from '@tanstack/react-router';
 
 interface MenuItemProps {
   item: MenuItemType;
   quantity: number;
   onQuantityChange: (itemId: string, quantity: number) => void;
+  storeId: string;
+  tableId: string;
 }
 
 const getBackgroundColor = (category: string, icon: string) => {
@@ -28,14 +31,18 @@ const getBackgroundColor = (category: string, icon: string) => {
   }
 };
 
-export function MenuItem({ item, quantity, onQuantityChange }: MenuItemProps) {
-  const handleDecrease = () => {
+export function MenuItem({ item, quantity, onQuantityChange, storeId, tableId }: MenuItemProps) {
+  const handleDecrease = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     if (quantity > 0) {
       onQuantityChange(item.id, quantity - 1);
     }
   };
 
-  const handleIncrease = () => {
+  const handleIncrease = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     onQuantityChange(item.id, quantity + 1);
   };
 
@@ -44,7 +51,10 @@ export function MenuItem({ item, quantity, onQuantityChange }: MenuItemProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <Link
+      to={`/${storeId}/table/${tableId}/menu/${item.id}`}
+      className="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
+    >
       <div className="flex items-center space-x-4">
         <div className={`w-16 h-16 ${getBackgroundColor(item.category, item.icon)} rounded-lg flex items-center justify-center`}>
           <span className="text-2xl">{item.icon}</span>
@@ -73,6 +83,6 @@ export function MenuItem({ item, quantity, onQuantityChange }: MenuItemProps) {
           </button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -9,12 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as MenuRouteImport } from './routes/menu'
+import { Route as StoreIdRouteImport } from './routes/$storeId'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StoreIdTableTableIdIndexRouteImport } from './routes/$storeId/table/$tableId/index'
+import { Route as StoreIdTableTableIdCheckoutRouteImport } from './routes/$storeId/table/$tableId/checkout'
+import { Route as StoreIdTableTableIdCartRouteImport } from './routes/$storeId/table/$tableId/cart'
+import { Route as StoreIdTableTableIdMenuItemIdRouteImport } from './routes/$storeId/table/$tableId/menu/$itemId'
 
-const MenuRoute = MenuRouteImport.update({
-  id: '/menu',
-  path: '/menu',
+const StoreIdRoute = StoreIdRouteImport.update({
+  id: '/$storeId',
+  path: '/$storeId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +26,94 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StoreIdTableTableIdIndexRoute =
+  StoreIdTableTableIdIndexRouteImport.update({
+    id: '/table/$tableId/',
+    path: '/table/$tableId/',
+    getParentRoute: () => StoreIdRoute,
+  } as any)
+const StoreIdTableTableIdCheckoutRoute =
+  StoreIdTableTableIdCheckoutRouteImport.update({
+    id: '/table/$tableId/checkout',
+    path: '/table/$tableId/checkout',
+    getParentRoute: () => StoreIdRoute,
+  } as any)
+const StoreIdTableTableIdCartRoute = StoreIdTableTableIdCartRouteImport.update({
+  id: '/table/$tableId/cart',
+  path: '/table/$tableId/cart',
+  getParentRoute: () => StoreIdRoute,
+} as any)
+const StoreIdTableTableIdMenuItemIdRoute =
+  StoreIdTableTableIdMenuItemIdRouteImport.update({
+    id: '/table/$tableId/menu/$itemId',
+    path: '/table/$tableId/menu/$itemId',
+    getParentRoute: () => StoreIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/menu': typeof MenuRoute
+  '/$storeId': typeof StoreIdRouteWithChildren
+  '/$storeId/table/$tableId/cart': typeof StoreIdTableTableIdCartRoute
+  '/$storeId/table/$tableId/checkout': typeof StoreIdTableTableIdCheckoutRoute
+  '/$storeId/table/$tableId': typeof StoreIdTableTableIdIndexRoute
+  '/$storeId/table/$tableId/menu/$itemId': typeof StoreIdTableTableIdMenuItemIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/menu': typeof MenuRoute
+  '/$storeId': typeof StoreIdRouteWithChildren
+  '/$storeId/table/$tableId/cart': typeof StoreIdTableTableIdCartRoute
+  '/$storeId/table/$tableId/checkout': typeof StoreIdTableTableIdCheckoutRoute
+  '/$storeId/table/$tableId': typeof StoreIdTableTableIdIndexRoute
+  '/$storeId/table/$tableId/menu/$itemId': typeof StoreIdTableTableIdMenuItemIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/menu': typeof MenuRoute
+  '/$storeId': typeof StoreIdRouteWithChildren
+  '/$storeId/table/$tableId/cart': typeof StoreIdTableTableIdCartRoute
+  '/$storeId/table/$tableId/checkout': typeof StoreIdTableTableIdCheckoutRoute
+  '/$storeId/table/$tableId/': typeof StoreIdTableTableIdIndexRoute
+  '/$storeId/table/$tableId/menu/$itemId': typeof StoreIdTableTableIdMenuItemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/menu'
+  fullPaths:
+    | '/'
+    | '/$storeId'
+    | '/$storeId/table/$tableId/cart'
+    | '/$storeId/table/$tableId/checkout'
+    | '/$storeId/table/$tableId'
+    | '/$storeId/table/$tableId/menu/$itemId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/menu'
-  id: '__root__' | '/' | '/menu'
+  to:
+    | '/'
+    | '/$storeId'
+    | '/$storeId/table/$tableId/cart'
+    | '/$storeId/table/$tableId/checkout'
+    | '/$storeId/table/$tableId'
+    | '/$storeId/table/$tableId/menu/$itemId'
+  id:
+    | '__root__'
+    | '/'
+    | '/$storeId'
+    | '/$storeId/table/$tableId/cart'
+    | '/$storeId/table/$tableId/checkout'
+    | '/$storeId/table/$tableId/'
+    | '/$storeId/table/$tableId/menu/$itemId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  MenuRoute: typeof MenuRoute
+  StoreIdRoute: typeof StoreIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/menu': {
-      id: '/menu'
-      path: '/menu'
-      fullPath: '/menu'
-      preLoaderRoute: typeof MenuRouteImport
+    '/$storeId': {
+      id: '/$storeId'
+      path: '/$storeId'
+      fullPath: '/$storeId'
+      preLoaderRoute: typeof StoreIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +123,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$storeId/table/$tableId/': {
+      id: '/$storeId/table/$tableId/'
+      path: '/table/$tableId'
+      fullPath: '/$storeId/table/$tableId'
+      preLoaderRoute: typeof StoreIdTableTableIdIndexRouteImport
+      parentRoute: typeof StoreIdRoute
+    }
+    '/$storeId/table/$tableId/checkout': {
+      id: '/$storeId/table/$tableId/checkout'
+      path: '/table/$tableId/checkout'
+      fullPath: '/$storeId/table/$tableId/checkout'
+      preLoaderRoute: typeof StoreIdTableTableIdCheckoutRouteImport
+      parentRoute: typeof StoreIdRoute
+    }
+    '/$storeId/table/$tableId/cart': {
+      id: '/$storeId/table/$tableId/cart'
+      path: '/table/$tableId/cart'
+      fullPath: '/$storeId/table/$tableId/cart'
+      preLoaderRoute: typeof StoreIdTableTableIdCartRouteImport
+      parentRoute: typeof StoreIdRoute
+    }
+    '/$storeId/table/$tableId/menu/$itemId': {
+      id: '/$storeId/table/$tableId/menu/$itemId'
+      path: '/table/$tableId/menu/$itemId'
+      fullPath: '/$storeId/table/$tableId/menu/$itemId'
+      preLoaderRoute: typeof StoreIdTableTableIdMenuItemIdRouteImport
+      parentRoute: typeof StoreIdRoute
+    }
   }
 }
 
+interface StoreIdRouteChildren {
+  StoreIdTableTableIdCartRoute: typeof StoreIdTableTableIdCartRoute
+  StoreIdTableTableIdCheckoutRoute: typeof StoreIdTableTableIdCheckoutRoute
+  StoreIdTableTableIdIndexRoute: typeof StoreIdTableTableIdIndexRoute
+  StoreIdTableTableIdMenuItemIdRoute: typeof StoreIdTableTableIdMenuItemIdRoute
+}
+
+const StoreIdRouteChildren: StoreIdRouteChildren = {
+  StoreIdTableTableIdCartRoute: StoreIdTableTableIdCartRoute,
+  StoreIdTableTableIdCheckoutRoute: StoreIdTableTableIdCheckoutRoute,
+  StoreIdTableTableIdIndexRoute: StoreIdTableTableIdIndexRoute,
+  StoreIdTableTableIdMenuItemIdRoute: StoreIdTableTableIdMenuItemIdRoute,
+}
+
+const StoreIdRouteWithChildren =
+  StoreIdRoute._addFileChildren(StoreIdRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  MenuRoute: MenuRoute,
+  StoreIdRoute: StoreIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
